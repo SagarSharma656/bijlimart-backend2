@@ -1,7 +1,7 @@
 const validator = require('validator');
 const Admin = require('../model/adminModel');
 const OTP = require('../model/otpModel');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const JWT = require('jsonwebtoken');
 
 
