@@ -71,11 +71,11 @@ const updateCategory = async (req, res) => {
                 message: "Fill category Id"
             });
         }
-        const existCategory = await Category.findById(categoryId);
+        // const existCategory = await Category.findById(categoryId);
 
         const updatedCategory = await Category.findByIdAndUpdate(categoryId, {
-                                                                  name: newName? newName : existCategory.name ,
-                                                                  description: newDescription? newDescription : existCategory.description,  
+                                                                  name: newName,
+                                                                  description: newDescription,  
                                                                 });
 
         return res.status(200).json({

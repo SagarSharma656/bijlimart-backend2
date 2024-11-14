@@ -244,4 +244,38 @@ const getAllVendor = async (req, res) => {
     }
 }
 
-module.exports = {vendorLogin, sendOtpOnEmail ,createVendor, getAllVendor}
+const deleteVendor  = async (req, res) => {
+    try {
+        const {vendorId} = req.body;
+
+        if(!vendorId){
+            return res.status(400).json({
+                success: false,
+                message: "Please fill vendorId"
+            })
+        }
+
+        // delete vendor product
+        // delete product reviews
+        // and other things if want
+
+        await Vendor.findByIdAndDelete(vendorId);
+
+
+        return res.status(200).json({
+            success: true,
+            message: "Vendor delete successfully"
+        });
+
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: `Server Error ${error.message}`
+        });
+    }
+}
+
+module.exports = {vendorLogin, sendOtpOnEmail ,createVendor, getAllVendor, deleteVendor}
