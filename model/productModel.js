@@ -19,10 +19,17 @@ const productSchema = new mongoose.Schema({
     price: {
         type: Number,
     },
+    weight: {
+        type: Number,
+    },
     stock: {
         type: Number,
     },
-    image: [String],
+    images: [
+        {
+            type: String
+        }
+    ],
     isAvilable :{
         type: Boolean,
         default: true,
