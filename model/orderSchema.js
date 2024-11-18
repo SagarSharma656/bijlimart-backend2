@@ -5,9 +5,9 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    vendorId:{
+    warehouseId:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Vendor',
+        ref: 'warehouse',
     },
     products:{
 

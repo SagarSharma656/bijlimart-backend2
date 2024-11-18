@@ -61,15 +61,15 @@ const isAdmin = (req, res, next) => {
     }
 }
 
-const isVendor = (req, res, next) => {
+const isWarehouse = (req, res, next) => {
 
     try {
         const user = req.user;
 
-        if(user.accountType !== 'vendor'){
+        if(user.accountType !== 'warehouse'){
             return res.status(401).json({
                 success: false,
-                message: 'This route for Vendor only'
+                message: 'This route for warehouse only'
             })
         }
         next()
@@ -97,4 +97,24 @@ const isUser = (req, res, next) => {
     }
 }
 
-module.exports = {auth, isAdmin, isVendor, isUser}
+
+const isAdminOrWarehouse = (req, res, next) => {
+    try {
+        const user = req.user;
+
+        console.log(user)
+
+        if (user.accountType !== 'admin' && user.accountType !== 'warehouse') {
+            return res.status(401).json({
+                success: false,
+                message: 'This route for Admin or warehouse'
+            })      
+        }
+        next()
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+module.exports = {auth, isAdmin, isWarehouse, isUser, isAdminOrWarehouse}

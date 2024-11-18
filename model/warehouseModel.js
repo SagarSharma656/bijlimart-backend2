@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const vendorSchema = new mongoose.Schema({
+const warehouseSchema = new mongoose.Schema({
     ownerName:{
         type: String
     },
@@ -25,7 +25,7 @@ const vendorSchema = new mongoose.Schema({
     },
     accountType : {
         type: String,
-        default: "vendor"
+        default: "warehouse"
     },
     productListing: [
         {
@@ -44,4 +44,4 @@ const vendorSchema = new mongoose.Schema({
 
 });
 
-module.exports = mongoose.model('Vendor', vendorSchema);
+module.exports = mongoose.model('Warehouse', warehouseSchema);

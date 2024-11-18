@@ -5,10 +5,11 @@ const connectToCloudinary = require('./config/cloudinary')
 const fileUpload = require('express-fileupload');
 
 
-const vendorRoutes = require('./routes/vendorRoutes')
+const warehouseRoutes = require('./routes/warehouseRoutes')
 const adminRoutes = require('./routes/adminRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
-const productRotes = require('./routes/productRoutes')
+const productRoutes = require('./routes/productRoutes')
+const unitRoutes = require('./routes/unitRoutes')
 
 
 const app = express();
@@ -27,10 +28,11 @@ connectToDB();
 connectToCloudinary();
 
 
-app.use('/api/vendor/', vendorRoutes);
+app.use('/api/warehouse/', warehouseRoutes);
 app.use('/api/admin/', adminRoutes);
 app.use('/api/category/', categoryRoutes);
-app.use('/api/product/', productRotes);
+app.use('/api/product/', productRoutes);
+app.use('/api/unit/', unitRoutes);
 
 app.get('/', (req, res) => {
     res.send('<h1>Bijli Mart Backend</h1>')

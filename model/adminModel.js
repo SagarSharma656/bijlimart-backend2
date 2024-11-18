@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { eventNames } = require('./vendorModel');
+const { eventNames } = require('./warehouseModel');
 
 const adminSchema = new mongoose.Schema({
  

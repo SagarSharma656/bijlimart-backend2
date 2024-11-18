@@ -3,12 +3,16 @@ const mongoose  = require("mongoose");
 const Product = require("../model/productModel");
 const fileUploadToCloudinary = require("../utils/fileUploadToCloudinary");
 require('dotenv').config();
+const Warehouse = require('../model/warehouseModel');
+const Category = require('../model/category');
+const Unit = require('../model/unitsModel');
+
 
 
 const addProduct = async (req, res) => {
     try {
         const user = req.user;
-        const {title, description, categoryId, price, weight, stock} = req.body;
+        const {title, description, categoryId, unitId,price, weight, stock} = req.body;
         const {images} = req.files;
 
 
@@ -16,6 +20,7 @@ const addProduct = async (req, res) => {
         if(!title ||
             !description ||
             !categoryId ||
+            !unitId ||
             !price ||
             !weight ||
             !stock){
@@ -32,9 +37,9 @@ const addProduct = async (req, res) => {
             })
         }
 
-        // const vendorId = new mongoose.Types.ObjectId(user.id)
+        // const warehouseId = new mongoose.Types.ObjectId(user.id)
 
-        const productExist = await Product.findOne({ vendorId: user.id, title });
+        const productExist = await Product.findOne({ warehouseId: user.id, title });
 
         if(productExist){
             return res.status(400).json({
@@ -56,10 +61,11 @@ const addProduct = async (req, res) => {
 
 
         const newProduct = await Product.create({
-            vendorId : user.id,
+            warehouseId : user.id,
             title,
             description,
             category : categoryId,
+            unit: unitId,
             price,
             weight,
             stock,
@@ -90,7 +96,7 @@ const addProduct = async (req, res) => {
 const getAllProduct = async (req, res) => {
     try {
         
-        const allProduct = await Product.find().populate('vendorId').populate('category');
+        const allProduct = await Product.find().populate('warehouseId').populate('category').populate('unit');
 
 
         return res.status(200).json({
@@ -122,12 +128,18 @@ const getProductById = async (req, res) => {
             })
         }
 
-        const product = await Product.findById(productId).populate('vendorId').populate('category');
+        const product = await Product.findById(productId).populate('warehouseId').populate('category').populate('unit');
+
+        const relatedProduct = await Product.find({ 
+                                                category: product.category,
+                                                _id : {$ne : product._id}
+                                            })
 
         return res.status(200).json({
             success: true,
             message: 'Product fetch succesfully',
-            product: product,
+            product,
+            relatedProduct
         })
     } catch (error) {
         console.log(error);
@@ -151,7 +163,7 @@ const getAllPoductByCategory = async (req, res) => {
             })
         }
 
-        const allProduct = await Product.find({ category: categoryId }).populate('vendorId').populate('category')
+        const allProduct = await Product.find({ category: categoryId }).populate('warehouseId').populate('category').populate('unit');
 
 
         return res.status(200).json({
@@ -170,4 +182,56 @@ const getAllPoductByCategory = async (req, res) => {
     }
 }
 
-module.exports = {addProduct, getAllProduct, getProductById, getAllPoductByCategory}
+const deleteProduct = async (req, res) => {
+    try {
+        const { productId } = req.body
+
+        if(!productId){
+            return res.status().json({
+                success: false,
+                message: "Fill all the mandatory fields"
+            })
+        }
+
+        const product = await Product.findById(productId);
+
+        if(!product){
+            return res.status().json({
+                success: false,
+                message: "Product not found"
+            })
+        }
+
+        const { warehouseId, categoryId, unitId, } = product;
+
+
+        await Category.findByIdAndUpdate(warehouseId, {
+                                                $pull: { product: productId }
+                                            });
+
+        await Category.findByIdAndUpdate(categoryId, {
+                                                $pull: { product: productId }
+                                            });
+
+        await Category.findByIdAndUpdate(unitId, {
+                                                $pull: { product: productId }
+                                            });
+
+
+        return res.status(200).json({
+            success: true,
+            message: 'Product delete succesfully'
+        })
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: `Server Error : ${error.message}`,
+            error: error.message,
+        })
+    }
+}
+
+module.exports = {addProduct, getAllProduct, getProductById, getAllPoductByCategory, deleteProduct}

@@ -1,4 +1,4 @@
-const Vendor = require('../model/vendorModel');
+const Warehouse = require('../model/warehouseModel');
 const bcrypt = require('bcryptjs');
 const JWT = require('jsonwebtoken');
 require('dotenv').config();
@@ -7,7 +7,7 @@ const otpGenerator = require('otp-generator');
 const OTP = require('../model/otpModel');
 
 
-const vendorLogin = async (req, res) => {
+const warehouseLogin = async (req, res) => {
     try {
         const {email, password} = req.body;
 
@@ -25,7 +25,7 @@ const vendorLogin = async (req, res) => {
             })
         }
 
-        const userExist = await Vendor.findOne({ownerEmail : email});
+        const userExist = await Warehouse.findOne({ownerEmail : email});
 
         // console.log(userExist)
 
@@ -67,11 +67,11 @@ const vendorLogin = async (req, res) => {
         })
         
     } catch (error) {
-        console.log('Something went wrong in vendor login : ', error);
+        console.log('Something went wrong in warehouse login : ', error);
 
         return res.status(500).json({
             success: false,
-            message: `Something went wrong in vendor login : ${error}`,
+            message: `Something went wrong in warehouse login : ${error}`,
             error: error.message, 
         });
     }
@@ -98,12 +98,12 @@ const sendOtpOnEmail = async (req, res) => {
             })
         }
 
-        const vandorExist = await Vendor.findOne({ ownerEmail : email})
+        const vandorExist = await warehouse.findOne({ ownerEmail : email})
 
         if(vandorExist){
             return res.status(400).json({
                 success: false,
-                message: "Vendor already registerd with us"
+                message: "warehouse already registerd with us"
             })
         }
 
@@ -137,7 +137,7 @@ const sendOtpOnEmail = async (req, res) => {
 }
 
 
-const createVendor = async (req, res) => {
+const createWarehouse = async (req, res) => {
     try {
         const { ownerName, ownerEmail, shopName, shopAddress, password, confirmPassword, otp } = req.body;
 
@@ -165,7 +165,7 @@ const createVendor = async (req, res) => {
             });
         }
 
-        const userExist = await Vendor.findOne({ ownerEmail: ownerEmail })
+        const userExist = await Warehouse.findOne({ ownerEmail: ownerEmail })
 
         if (userExist) {
             return res.status(400).json({
@@ -192,7 +192,7 @@ const createVendor = async (req, res) => {
 
         const hashPassword = await bcrypt.hash(password, 10);
 
-        const vendor = await Vendor.create({
+        const warehouse = await Warehouse.create({
             ownerName: ownerName,
             ownerEmail: ownerEmail,
             password: hashPassword,
@@ -205,66 +205,66 @@ const createVendor = async (req, res) => {
             },
         });
 
-        vendor.password = null;
+        warehouse.password = null;
 
         return res.status(200).json({
             success: true,
-            message: "Vendor create succesfully",
-            vendor: vendor
+            message: "warehouse create succesfully",
+            warehouse: warehouse
         });
     } catch (error) {
-        console.log('Something went wrong when vendor craete : ', error);
+        console.log('Something went wrong when warehouse craete : ', error);
 
         return res.status(500).json({
             success: false,
-            message: `Vendor not create : ${error}`,
+            message: `warehouse not create : ${error}`,
             error: error.message,
         });
     }
 }
 
-const getAllVendor = async (req, res) => {
+const getAllWarehouse = async (req, res) => {
     try {
-        const allVendors = await Vendor.find();
+        const allWarehouses = await Warehouse.find();
 
 
         return res.status(200).json({
             success: true,
-            message: "All vendor list",
-            vendorList : allVendors
+            message: "All warehouse list",
+            warehouseList : allWarehouses
         })
     } catch (error) {
-        console.log('Something went wrong when fetch all vendors : ', error);
+        console.log('Something went wrong when fetch all warehouses : ', error);
 
         return res.status(500).json({
             success: false,
-            message: `Something went wrong when fetch all vendors : ${error}`,
+            message: `Something went wrong when fetch all warehouses : ${error}`,
             error: error.message,
         });
     }
 }
 
-const deleteVendor  = async (req, res) => {
+const deleteWarehouse  = async (req, res) => {
     try {
-        const {vendorId} = req.body;
+        const {warehouseId} = req.body;
 
-        if(!vendorId){
+        if(!warehouseId){
             return res.status(400).json({
                 success: false,
-                message: "Please fill vendorId"
+                message: "Please fill warehouseId"
             })
         }
 
-        // delete vendor product
+        // delete warehouse product
         // delete product reviews
         // and other things if want
 
-        await Vendor.findByIdAndDelete(vendorId);
+        await Warehouse.findByIdAndDelete(warehouseId);
 
 
         return res.status(200).json({
             success: true,
-            message: "Vendor delete successfully"
+            message: "warehouse delete successfully"
         });
 
 
@@ -278,4 +278,4 @@ const deleteVendor  = async (req, res) => {
     }
 }
 
-module.exports = {vendorLogin, sendOtpOnEmail ,createVendor, getAllVendor, deleteVendor}
+module.exports = {warehouseLogin, sendOtpOnEmail ,createWarehouse, getAllWarehouse, deleteWarehouse}
