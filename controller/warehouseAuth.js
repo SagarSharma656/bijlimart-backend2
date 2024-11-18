@@ -5,13 +5,15 @@ require('dotenv').config();
 const validator = require('validator');
 const otpGenerator = require('otp-generator');
 const OTP = require('../model/otpModel');
+const mailSender = require('../utils/mailSender');
+const uuid = require('uuid').v4;
 
 
 const warehouseLogin = async (req, res) => {
     try {
         const {email, password} = req.body;
 
-        if(!email, !password){
+        if(!email || !password){
             res.status(400).json({
                 success: false,
                 message: "Fill all the mandatory field",
@@ -98,9 +100,9 @@ const sendOtpOnEmail = async (req, res) => {
             })
         }
 
-        const vandorExist = await warehouse.findOne({ ownerEmail : email})
+        const warehouseExist = await Warehouse.findOne({ ownerEmail : email})
 
-        if(vandorExist){
+        if (warehouseExist){
             return res.status(400).json({
                 success: false,
                 message: "warehouse already registerd with us"
@@ -278,4 +280,135 @@ const deleteWarehouse  = async (req, res) => {
     }
 }
 
-module.exports = {warehouseLogin, sendOtpOnEmail ,createWarehouse, getAllWarehouse, deleteWarehouse}
+const resetPasswordToken = async (req, res) => {
+    try {
+        const {email} = req.body;
+
+        // console.log(email)
+
+        if(!email){
+            return res.status(400).json({
+                success: true,
+                message: "Fill all the mandatory fields"
+            })
+        }
+
+        const userExist = await Warehouse.find({ ownerEmail : email })
+
+        if(!userExist){
+            return res.status(401).json({
+                success: false,
+                message: "This user is not registered with us."
+            })
+        }
+
+        // console.log(userExist)
+
+        const passResetToken = uuid();
+
+        const url = `http://localhost:3000/updatePassword/${passResetToken}`;
+
+        // console.log(passResetToken)
+
+        const updatedWarehouse = await Warehouse.findOneAndUpdate({ownerEmail : email}, {
+                                                                            passResetToken: `${passResetToken}`,
+                                                                            resetPasswordExpires: Date.now() + 3600000
+        }, { new: true }).populate('productList').populate('orders');
+
+
+        updatedWarehouse.password = null;
+
+        await mailSender(email, "Password reset email from BijliMart", `Password reast url (valid only for 5 min.): ${url}`)
+
+        return res.status(200).json({
+            success: true,
+            message: "Email send succesfully",
+            user: updatedWarehouse,
+        })
+        
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: `Server Error : ${error.message}`,
+            error: error,
+        })
+    }
+}
+
+
+const resetPassword = async (req, res) => {
+    try {
+        const {token, password, confirmPassword} = req.body;
+
+        if(!token || !password || !confirmPassword){
+            return res.status(400).json({
+                success: false,
+                message: "Please fill all the mandatory fields"
+            });
+        }
+
+        if(password != confirmPassword){
+            return res.status(400).json({
+                success: false,
+                message: "Password not match",
+            })
+        }
+
+        const existUser = await Warehouse.findOne({ passResetToken : token});
+
+        // console.log(existUser);
+
+        if(!existUser){
+            return res.status(401).json({
+                success: false,
+                message: "Invalid token"
+            });
+        }
+
+        if(existUser.resetPasswordExpires < Date.now()){
+            return res.status(401).json({
+                success: false,
+                message: "Token expire"
+            })
+        }
+
+
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        // console.log(hashPassword);
+
+
+        const updatedWarehouse = await Warehouse.findByIdAndUpdate(
+                                                                existUser._id,
+                                                                {password: hashPassword},
+                                                                {new: true}
+        ).populate('productList').populate('orders');
+
+        // await mailSender(    
+        //     existUser.ownerEmail,
+        //     "Password Reset Succesful",
+        //     `Your password on this ${existUser.ownerEmail} account succesfully reset if its not you then contact us`
+        // );
+
+        return res.status(200).json({
+            success: true,
+            user: updatedWarehouse,
+            message: "Password Reset succesful"
+        });
+
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: `Server Error : ${error.message}`,
+            error: error
+        })
+    }
+}
+
+module.exports = {warehouseLogin, sendOtpOnEmail ,createWarehouse, getAllWarehouse, deleteWarehouse, resetPasswordToken, resetPassword}

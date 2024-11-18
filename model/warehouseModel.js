@@ -27,7 +27,7 @@ const warehouseSchema = new mongoose.Schema({
         type: String,
         default: "warehouse"
     },
-    productListing: [
+    productList: [
         {
             productId: mongoose.Schema.Types.ObjectId,
         }
@@ -37,6 +37,12 @@ const warehouseSchema = new mongoose.Schema({
             orderId: mongoose.Schema.Types.ObjectId,
         }
     ],
+    passResetToken:{
+        type: String,
+    },
+    resetPasswordExpires: {
+        type: Date,
+    },
     createdAt : {
         type: Date,
         default: Date.now(),

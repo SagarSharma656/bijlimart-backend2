@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const mailSender = async (email, subject , body) => {
+const mailSender = async (email, subject, body) => {
     try {
         const transport = nodemailer.createTransport({
             host: process.env.MAIL_HOST,
@@ -9,7 +9,7 @@ const mailSender = async (email, subject , body) => {
                 user: process.env.MAIL_USER,
                 pass: process.env.MAIL_PASS,
             }
-        })  
+        })
         
         const emailInfo = await transport.sendMail({
             from: "BijliMart - delivered in 10 minutes",

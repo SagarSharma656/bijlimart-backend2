@@ -1,15 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-const { warehouseLogin, sendOtpOnEmail, createWarehouse, getAllWarehouse } = require('../controller/warehouseAuth')
+const { warehouseLogin, sendOtpOnEmail, createWarehouse, getAllWarehouse, resetPasswordToken, resetPassword } = require('../controller/warehouseAuth')
 
 const {auth, isWarehouse, isAdmin} = require('../middleware/auth')
 
 
-router.post('/venderLogin', warehouseLogin);
+router.post('/warehouseLogin', warehouseLogin);
 router.post('/sendOtpOnEmail', sendOtpOnEmail);
 router.post('/createwarehouse', auth, isAdmin, createWarehouse);
-router.get('/getAllwarehouse', auth, isAdmin, getAllWarehouse);
+router.get('/getAllWarehouse', auth, isAdmin, getAllWarehouse);
+router.post('/resetPasswordToken', resetPasswordToken);
+router.post('/resetPassword', resetPassword);
 
 
 module.exports = router;

@@ -43,7 +43,7 @@ const isAdmin = (req, res, next) => {
     try {
         const user = req.user;
 
-        console.log('user : ', user);
+        // console.log('user : ', user);
 
         if (user.accountType !== 'admin') {
 
