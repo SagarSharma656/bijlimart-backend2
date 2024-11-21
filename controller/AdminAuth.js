@@ -52,7 +52,14 @@ const adminLogin = async (req, res) => {
             expiresIn: '24h'
         })
 
-        return res.status(200).json({
+        const options = {
+            path: '/',
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), 
+            httpOnly: true,
+            secure: false,
+        };
+
+        return res.cookie("token", token, options).status(200).json({
             success: true,
             message: "Admin login successful",
             token: token,

@@ -55,18 +55,29 @@ const login = async (req, res) => {
             expiresIn : '24h'
         });
 
+        const options = {
+            path: '/',
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            httpOnly: true,
+            secure: false,
+        };
 
-        return res.status(200).json({
+
+        return res.cookie("token", token, options).status(200).json({
             success: true,
             message: "Delivery boy login succesful",
             token,
             user: deliveryBoyExist
-        })
-
-
+        });
 
     } catch (error) {
-        
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: `Server Error : ${error.message}`,
+            error: error.message
+        });
     }
 }
 
@@ -318,4 +329,4 @@ const changeAvailableStatusOfDeliveryBoy = async (req, res) => {
     }
 }
 
-module.exports = {sendOtpOnEmail, addDeliveryBoy, changeBasicDetailsOfDeliveryBoy, blockAndUnblockDeliveryBoy, changeAvailableStatusOfDeliveryBoy}
+module.exports = {login, sendOtpOnEmail, addDeliveryBoy, changeBasicDetailsOfDeliveryBoy, blockAndUnblockDeliveryBoy, changeAvailableStatusOfDeliveryBoy}

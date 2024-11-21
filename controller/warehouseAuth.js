@@ -60,8 +60,15 @@ const warehouseLogin = async (req, res) => {
             expiresIn: "24h"
         });
 
+        const options = {
+            path: '/',
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            httpOnly: true,
+            secure: false,
+        };
 
-        return res.status(200).json({
+
+        return res.cookie("token", token, options).status(200).json({
             success: true,
             message: "Login succesful",
             token: token,
@@ -141,7 +148,7 @@ const sendOtpOnEmail = async (req, res) => {
 
 const createWarehouse = async (req, res) => {
     try {
-        const { ownerName, ownerEmail, shopName, shopAddress, password, confirmPassword, otp } = req.body;
+        const { ownerName, ownerEmail, shopName, shopAddress, password, confirmPassword, longitude, latitude, otp } = req.body;
 
         if (!ownerName ||
             !ownerEmail ||
@@ -152,6 +159,8 @@ const createWarehouse = async (req, res) => {
             !shopAddress.pinCode ||
             !password ||
             !confirmPassword ||
+            !longitude ||
+            !latitude ||
             !otp) {
 
             return res.status(400).json({
@@ -205,6 +214,10 @@ const createWarehouse = async (req, res) => {
                 state: shopAddress?.state,
                 pinCode: shopAddress?.pinCode,
             },
+            location: {
+                type: 'Point',
+                coordinates: [longitude, latitude] // [longitude, latitude]
+            }
         });
 
         warehouse.password = null;
@@ -409,4 +422,53 @@ const resetPassword = async (req, res) => {
     }
 }
 
-module.exports = {warehouseLogin, sendOtpOnEmail ,createWarehouse, getAllWarehouse, deleteWarehouse, resetPasswordToken, resetPassword}
+const findNearestWarehouse = async (req, res) => {
+    try {
+        const { userLongitude, userLatitude } = req.body;
+
+        if (!userLongitude || !userLatitude ){
+            return res.status(400).json({
+                success: false,
+                message: "Fill all the mandatory fields"
+            });
+        }
+
+        const nearestWarehouse = await Warehouse.findOne({
+            location:{
+                $near: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates : [userLongitude, userLatitude]
+                    }
+                }
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Nearest warehouse fetched",
+            warehouse: nearestWarehouse
+        })
+
+
+    } catch (error) {
+        console.log(error);
+        
+        return res.status(500).json({
+            success: false,
+            message: `Server Error : ${error.message}`,
+            error: error.message,
+        })
+    }
+}
+
+module.exports = {
+    warehouseLogin, 
+    sendOtpOnEmail,
+    createWarehouse,
+    getAllWarehouse,
+    deleteWarehouse,
+    resetPasswordToken,
+    resetPassword,
+    findNearestWarehouse
+}

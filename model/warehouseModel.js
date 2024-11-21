@@ -61,4 +61,6 @@
 
     });
 
+    warehouseSchema.index({ location: '2dsphere' });
+
     module.exports = mongoose.model('Warehouse', warehouseSchema);
