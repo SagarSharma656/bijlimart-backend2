@@ -10,6 +10,7 @@ const adminRoutes = require('./routes/adminRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
 const productRoutes = require('./routes/productRoutes')
 const unitRoutes = require('./routes/unitRoutes')
+const deliveryBoyRoutes = require('./routes/deliveryBoyRoutes')
 
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api/admin/', adminRoutes);
 app.use('/api/category/', categoryRoutes);
 app.use('/api/product/', productRoutes);
 app.use('/api/unit/', unitRoutes);
+app.use('/api/deliveryBoy/', deliveryBoyRoutes);
 
 app.get('/', (req, res) => {
     res.send('<h1>Bijli Mart Backend</h1>')

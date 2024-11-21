@@ -98,6 +98,24 @@ const isUser = (req, res, next) => {
 }
 
 
+const isDeliveryBoy = (req, res, next) => {
+    try {
+        const user = req.user;
+
+        if (user.accountType !== 'deliveryBoy'){
+            return res.status(401).json({
+                success: false,
+                message: 'This route for delivery boy only'
+            })
+        }
+        next()
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
 const isAdminOrWarehouse = (req, res, next) => {
     try {
         const user = req.user;
@@ -117,4 +135,4 @@ const isAdminOrWarehouse = (req, res, next) => {
     }
 }
 
-module.exports = {auth, isAdmin, isWarehouse, isUser, isAdminOrWarehouse}
+module.exports = {auth, isAdmin, isWarehouse, isUser, isDeliveryBoy, isAdminOrWarehouse}

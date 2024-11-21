@@ -1,11 +1,13 @@
 const Category = require('../model/category');
+const fileUploadToCloudinary = require('../utils/fileUploadToCloudinary')
 
 
 const createCategory = async (req, res) => {
     try {
-        const {name, description} = req.body
+        const {name, description} = req.body;
+        const categoryImage = req.files.categoryImage;
 
-        if(!name || !description){
+        if(!name || !description || !categoryImage){
             return res.status(400).json({
                 success: false,
                 message: "Fill all the mandatory fields"
@@ -21,9 +23,12 @@ const createCategory = async (req, res) => {
             })
         }
 
+        const uploadedImage = await fileUploadToCloudinary(categoryImage, process.env.CLOUD_FOLDER_CATEGORY, 70);
+
         const newCategory = await Category.create({
             name: name,
             description: description,
+            image: uploadedImage.secure_url,
         });
 
         return res.status(200).json({

@@ -52,7 +52,7 @@ const addProduct = async (req, res) => {
 
         if(Array.isArray(images)){
             for (const image of images) {
-                const uploadImage = await fileUploadToCloudinary(image, process.env.CLOUD_FOLDER)
+                const uploadImage = await fileUploadToCloudinary(image, process.env.CLOUD_FOLDER_PRODUCT, 70)
                 imagesUrl.push(uploadImage.secure_url);
             }
         }

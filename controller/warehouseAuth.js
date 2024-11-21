@@ -338,7 +338,6 @@ const resetPasswordToken = async (req, res) => {
     }
 }
 
-
 const resetPassword = async (req, res) => {
     try {
         const {token, password, confirmPassword} = req.body;
@@ -380,18 +379,17 @@ const resetPassword = async (req, res) => {
 
         // console.log(hashPassword);
 
-
         const updatedWarehouse = await Warehouse.findByIdAndUpdate(
                                                                 existUser._id,
-                                                                {password: hashPassword},
+                                                                { password: hashPassword, passResetToken: ""},
                                                                 {new: true}
         ).populate('productList').populate('orders');
 
-        // await mailSender(    
-        //     existUser.ownerEmail,
-        //     "Password Reset Succesful",
-        //     `Your password on this ${existUser.ownerEmail} account succesfully reset if its not you then contact us`
-        // );
+        await mailSender(    
+            existUser.ownerEmail,
+            "Password Reset Succesful",
+            `Your password on this ${existUser.ownerEmail} account succesfully reset if its not you then contact us`
+        );
 
         return res.status(200).json({
             success: true,
