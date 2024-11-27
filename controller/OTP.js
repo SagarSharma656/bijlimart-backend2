@@ -2,6 +2,7 @@ const validator = require('validator');
 const otpGenerator = require('otp-generator');
 const OTP = require('../model/otpModel');
 const whatAppMessage = require('../utils/whatsAppMessage');
+const {mailSender} = require('../utils/mailSender');
 
 
 const sendOtpOnEmail = async (req, res) => {
@@ -41,12 +42,8 @@ const sendOtpOnEmail = async (req, res) => {
             specialChars: false,
         })
 
-        await OTP.create({
-            email: email,
-            otp: otp,
-        });
-
-
+        await mailSender(email, `Email verification mail`, `OTP for email verification - ${otp}`)
+       
         return res.status(200).json({
             success: true,
             message: "OTP send on your email",
@@ -83,24 +80,14 @@ const sendOtpOnWhatsapp = async (req, res) => {
             lowerCaseAlphabets: false,
             specialChars: false,
         });
-
-        await OTP.create({
-            phone: phone,
-            otp: otp,
-        });
-
-        await whatAppMessage(phone, `This is your OTP : ${otp}`);
-
         
+        await whatAppMessage(phone, `This is your OTP : ${otp}`);
 
         return res.json({
             success: true,
             message: "OTP send on your whatsapp",
             otp : otp,
         });
-
-      
-
 
     } catch (error) {
         console.log(error);

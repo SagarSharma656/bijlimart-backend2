@@ -7,9 +7,9 @@ const Address = require('../model/addresses');
 
 const userLoginSignUp = async (req, res) => {
     try {
-        const {phone, otp} = req.body;
+        const {phone} = req.body;
 
-        if(!phone || !otp){
+        if(!phone){
             return res.status(400).json({
                 success: false,
                 message: "Fill all the mandatory fields"
@@ -28,17 +28,17 @@ const userLoginSignUp = async (req, res) => {
                                                                             model: "Product"
                                                                         });
 
-        const existOtp = await OTP.findOne({phone : phone}).sort({createdAt : -1});
+        // const existOtp = await OTP.findOne({phone : phone}).sort({createdAt : -1});
 
 
-        if(!existOtp || existOtp.otp != otp){
-            return res.status(401).json({
-                success: false,
-                message: "Wrong OTP"
-            });
-        }
+        // if(!existOtp || existOtp.otp != otp){
+        //     return res.status(401).json({
+        //         success: false,
+        //         message: "Wrong OTP"
+        //     });
+        // }
 
-        await OTP.deleteMany({ phone: phone });
+        // await OTP.deleteMany({ phone: phone });
 
 
         if(userExist){
