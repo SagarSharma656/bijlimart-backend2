@@ -14,6 +14,8 @@ const productRoutes = require('./routes/productRoutes')
 const unitRoutes = require('./routes/unitRoutes')
 const deliveryBoyRoutes = require('./routes/deliveryBoyRoutes')
 const subCategoryRoutes = require('./routes/subCategoryRoutes')
+const otpRoutes = require('./routes/otpRoutes')
+const userRoutes = require('./routes/userRoutes')
 
 
 const app = express();
@@ -43,6 +45,8 @@ app.use('/api/product/', productRoutes);
 app.use('/api/unit/', unitRoutes);
 app.use('/api/deliveryBoy/', deliveryBoyRoutes);
 app.use('/api/subCategory/', subCategoryRoutes);
+app.use('/api/otp/', otpRoutes);
+app.use('/api/user/', userRoutes);
 
 app.get('/', (req, res) => {
     res.send('<h1>Bijli Mart Backend</h1>')

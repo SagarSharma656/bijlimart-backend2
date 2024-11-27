@@ -2,7 +2,7 @@ const DeliveryBoy = require('../model/deliveryBoyModel');
 const validator = require('validator');
 const OTP = require('../model/otpModel');
 const bcrypt = require('bcryptjs');
-const fileUploadToCloudinary = require('../utils/fileUploadToCloudinary');
+const {fileUploadToCloudinary} = require('../utils/cloudinaryOperatios');
 const otpGenerator = require('otp-generator');
 const JWT = require('jsonwebtoken');
 require('dotenv').config();

@@ -3,10 +3,12 @@ const bcrypt = require('bcryptjs');
 const JWT = require('jsonwebtoken');
 require('dotenv').config();
 const validator = require('validator');
-const otpGenerator = require('otp-generator');
 const OTP = require('../model/otpModel');
-const mailSender = require('../utils/mailSender');
+const { mailSender, lowStockMailSend } = require('../utils/mailSender');
 const uuid = require('uuid').v4;
+const { fileUploadToCloudinary, getPublicIdFromUrl, deteteFromCloudinary } = require('../utils/cloudinaryOperatios');
+const Product = require('../model/productModel');
+
 
 
 const warehouseLogin = async (req, res) => {
@@ -86,77 +88,39 @@ const warehouseLogin = async (req, res) => {
     }
 }
 
-const sendOtpOnEmail = async (req, res) => {
-    try {
-
-        const {email} = req.body;
-
-        // console.log(email)
-
-        if(!email){
-            return res.status(400).json({
-                success: false,
-                message: 'Fill all the required fields'
-            });
-        }
-
-        if(!validator.isEmail(email)){
-            return res.status(400).json({
-                success: false,
-                message: "This is not a valid email Id"
-            })
-        }
-
-        const warehouseExist = await Warehouse.findOne({ ownerEmail : email})
-
-        if (warehouseExist){
-            return res.status(400).json({
-                success: false,
-                message: "warehouse already registerd with us"
-            })
-        }
-
-        const otp = await otpGenerator.generate(6,{
-            digits: true,
-            upperCaseAlphabets: false,
-            lowerCaseAlphabets: false,
-            specialChars: false,
-        })
-
-        await OTP.create({
-            email: email,
-            otp: otp,
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: "OTP send on your email",
-            otp: otp
-        })
-        
-    } catch (error) {
-        console.log('Otp not send : ', error);
-
-        return res.status(500).json({
-            success: false,
-            message: `Otp not send : ${error}`,
-            error: error.message,
-        });
-    }
-}
-
-
 const createWarehouse = async (req, res) => {
     try {
-        const { ownerName, ownerEmail, shopName, shopAddress, password, confirmPassword, longitude, latitude, otp } = req.body;
+        const { 
+            ownerName, 
+            ownerEmail, 
+            warehouseName, 
+            warehouseAddress, 
+            bankDetails,
+            password, 
+            confirmPassword, 
+            longitude, 
+            latitude, 
+            otp } = req.body;
+
+        const {
+            image,
+            warehouseImages,
+            aadharImage,
+            panImage,
+            passbookImage,
+        } = req.files
 
         if (!ownerName ||
             !ownerEmail ||
-            !shopName ||
-            !shopAddress.street ||
-            !shopAddress.city ||
-            !shopAddress.state ||
-            !shopAddress.pinCode ||
+            !warehouseName ||
+            !warehouseAddress.street ||
+            !warehouseAddress.city ||
+            !warehouseAddress.state ||
+            !warehouseAddress.pinCode ||
+            !bankDetails.accountHolderName ||
+            !bankDetails.accountNumber ||
+            !bankDetails.ifscCode ||
+            !bankDetails.bankName ||
             !password ||
             !confirmPassword ||
             !longitude ||
@@ -169,6 +133,18 @@ const createWarehouse = async (req, res) => {
             });
         }
 
+        if (!image ||
+            !warehouseImages ||
+            !aadharImage ||
+            !panImage ||
+            !passbookImage){
+
+            return res.status(400).json({
+                success: false,
+                message: "Fill all the madatory fields"
+            });  
+        }
+
         if (!validator.isEmail(ownerEmail)) {
             return res.status(400).json({
                 success: false,
@@ -176,12 +152,12 @@ const createWarehouse = async (req, res) => {
             });
         }
 
-        const userExist = await Warehouse.findOne({ ownerEmail: ownerEmail })
+        const userExist = await Warehouse.findOne({ ownerEmail: ownerEmail });
 
         if (userExist) {
             return res.status(400).json({
                 success: false,
-                message: 'User already registered'
+                message: 'This warehoue already registered'
             });
         }
 
@@ -203,16 +179,42 @@ const createWarehouse = async (req, res) => {
 
         const hashPassword = await bcrypt.hash(password, 10);
 
+        const profileImg = await fileUploadToCloudinary(image, process.env.CLOUD_FOLDER_WAREHOUSE_OWNER);
+
+        const warehouseImagesUrl = [];
+        if (Array.isArray(warehouseImages)) {
+            for (const image of warehouseImages) {
+                const uploadImage = await fileUploadToCloudinary(image, process.env.CLOUD_FOLDER_WAREHOUSE, 70)
+                warehouseImagesUrl.push(uploadImage.secure_url);
+            }
+        }
+
+        const aadharImg = await fileUploadToCloudinary(aadharImage, process.env.CLOUD_FOLDER_WAREHOUSE_OWNER);
+        const panImg = await fileUploadToCloudinary(panImage, process.env.CLOUD_FOLDER_WAREHOUSE_OWNER);
+        const passbookImg = await fileUploadToCloudinary(passbookImage, process.env.CLOUD_FOLDER_WAREHOUSE_OWNER);
+
+
         const warehouse = await Warehouse.create({
             ownerName: ownerName,
             ownerEmail: ownerEmail,
             password: hashPassword,
-            shopName: shopName,
-            shopAddress: {
-                street: shopAddress?.street,
-                city: shopAddress?.city,
-                state: shopAddress?.state,
-                pinCode: shopAddress?.pinCode,
+            image : profileImg.secure_url,
+            warehouseName: warehouseName,
+            warehouseAddress: {
+                street: warehouseAddress?.street,
+                city: warehouseAddress?.city,
+                state: warehouseAddress?.state,
+                pinCode: warehouseAddress?.pinCode,
+            },
+            warehouseImage: warehouseImagesUrl,
+            aadharImage: aadharImg,
+            panImage: panImg,
+            passbookImage: passbookImg,
+            bankDetails: {
+                accountHolderName: bankDetails?.accountHolderName,
+                accountNumber: bankDetails?.accountNumber,
+                ifscCode: bankDetails?.ifscCode,
+                bankName: bankDetails?.bankName,
             },
             location: {
                 type: 'Point',
@@ -273,6 +275,19 @@ const deleteWarehouse  = async (req, res) => {
         // delete warehouse product
         // delete product reviews
         // and other things if want
+
+        const warehouse = await Warehouse.findById(warehouseId);
+
+        await deteteFromCloudinary(getPublicIdFromUrl(warehouse.image));
+
+        if(Array.isArray(warehouse.warehouseImage)){
+            warehouse.warehouseImage.forEach(image => deteteFromCloudinary(getPublicIdFromUrl(image)))
+        }
+
+        await deteteFromCloudinary(getPublicIdFromUrl(warehouse.aadharImage));
+        await deteteFromCloudinary(getPublicIdFromUrl(warehouse.panImage));
+        await deteteFromCloudinary(getPublicIdFromUrl(warehouse.passbookImage));
+
 
         await Warehouse.findByIdAndDelete(warehouseId);
 
@@ -439,7 +454,8 @@ const findNearestWarehouse = async (req, res) => {
                     $geometry: {
                         type: "Point",
                         coordinates : [userLongitude, userLatitude]
-                    }
+                    },
+                    $maxDistance: 5000,
                 }
             }
         });
@@ -462,13 +478,155 @@ const findNearestWarehouse = async (req, res) => {
     }
 }
 
+const lowStockAlert = async (req, res) => {
+    try {
+        const { warehouseId, threshold } = req.body;
+
+        if(!warehouseId || !threshold){
+            return res.status(400).json({
+                success: false,
+                message: "Fill all the mandatory fields",
+            });
+        }
+
+        const warehouse = await Warehouse.findById(warehouseId);
+
+        if(!warehouse){
+            return res.status(401).json({
+                success: false,
+                message: "Warehouse not registered"
+            });
+        }
+
+        const lowStockProduct = await Product.find({
+            warehouseId,
+            stock: { $lt: threshold },
+        });
+
+        if (lowStockProduct.length === 0){
+            return res.status(200).json({
+                success: false,
+                message: 'No low stock Product'
+            })
+        }
+
+        await lowStockMailSend(lowStockProduct);
+
+        return res.status(200).json({
+            suucess: true,
+            message: "Send low stock alert successfully"
+        })
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: `Server Error : ${error.message}`,
+            error: error.message,
+
+        })
+    }
+}
+
+const updateStock = async (req, res) => {
+    try {
+        const {productId, newStock} = req.body
+
+        if(!productId || !newStock){
+            return res.status(400).json({
+                success: false,
+                message: 'Fill all the mandatory fields'
+            })
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(productId, {
+            stock : newStock,
+        }, { new: true })
+            .populate('category')
+            .populate('subCategory')
+            .populate('unitId')
+            .exec();
+
+        if(!updatedProduct){
+            return res.status(400).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Stock updated succesfuly",
+            updatedProduct
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message: `Server Error : ${error.message}`,
+            error: error.message
+        });
+    }
+}
+
+const markAvailableOrNot = async (req, res) => {
+    try {
+        
+        const { productId, available } = req.body
+
+        if(!productId){
+            return res.status(400).json({
+                success: false,
+                message: "Fill all the mandatory fields"
+            })
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(productId, {
+            isAvailable: available,
+        }, {new : true})
+            .populate('category')
+            .populate('subCategory')
+            .populate('unitId')
+            .exec();
+
+        if (!updatedProduct) {
+            return res.status(400).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: `Now Product is ${available ? "" : "not"} availabel`,
+            updatedProduct
+        });
+
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            success: false,
+            message:  `Sever Error : ${error.message}`,
+            error: error.message
+        });
+    }
+}
+
+
 module.exports = {
-    warehouseLogin, 
-    sendOtpOnEmail,
+    warehouseLogin,
     createWarehouse,
     getAllWarehouse,
     deleteWarehouse,
     resetPasswordToken,
     resetPassword,
-    findNearestWarehouse
+    findNearestWarehouse,
+    lowStockAlert,
+    updateStock,
+    markAvailableOrNot,
 }

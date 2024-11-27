@@ -9,10 +9,14 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'warehouse',
     },
-    products:{
-
-    }
+    products:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product"
+        }
+    ]
     
 });
 
-module.exports = orderSchema 
+
+module.exports = mongoose.model("Order", orderSchema);

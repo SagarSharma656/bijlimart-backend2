@@ -102,7 +102,7 @@ const getAllUnits = async (req, res) => {
 }
 
 
-const getUnitById = async (req, res) => {   
+const getUnitById = async (req, res) => {
     try {
         const { unitId } = req.body;
 

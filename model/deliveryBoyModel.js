@@ -68,7 +68,7 @@ const deliveryBoySchema = new mongoose.Schema({
     assignedOrders: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Order',
+            ref: "Order",
         },
     ],
     isBlock:{
@@ -90,7 +90,7 @@ const deliveryBoySchema = new mongoose.Schema({
     },
 });
 
-// deliveryBoySchema.index({ currentLocation: '2dsphere' }); // Enables geospatial queries for currentLocation
+deliveryBoySchema.index({ "currentLocation.coordinates": "2dsphere" });
 
 const DeliveryBoy = mongoose.model('DeliveryBoy', deliveryBoySchema);
 

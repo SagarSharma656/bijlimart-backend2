@@ -47,7 +47,6 @@ const isAdmin = (req, res, next) => {
 
         if (user.accountType !== 'admin') {
 
-            console.log('User is not admin');
 
             return res.status(401).json({
                 success: false,

@@ -136,7 +136,6 @@ const deleteSubCategory = async (req, res) => {
             });
         }
 
-
         const updatedCategory = await Category.findByIdAndUpdate(
                                                             categoryId, 
                                                             {

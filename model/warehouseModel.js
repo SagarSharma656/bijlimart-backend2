@@ -10,14 +10,35 @@
         password: {
             type: String,
         },
-        shopName:{
+        image: {
+            type: String,
+        },
+        warehouseName:{
             type: String
         },
-        shopAddress: {
+        warehouseAddress: {
             street: String,
             city: String,
             state: String,
             pinCode: String,
+        },
+        warehouseImage : {
+            type: [String]
+        },
+        aadharImage: {
+            type: String, // URL or path to the uploaded Aadhaar image
+        },
+        panImage: {
+            type: String, // URL or path to the uploaded PAN image
+        },
+        passbookImage: {
+            type: String, // URL or path to the uploaded passbook image
+        },
+        bankDetails: {
+            accountHolderName: { type: String }, // Bank account holder's name
+            accountNumber: { type: String }, // Bank account number
+            ifscCode: { type: String }, // Bank IFSC code
+            bankName: { type: String }, // Name of the bank
         },
         location: {
             type: {
@@ -40,13 +61,16 @@
         },
         productList: [
             {
-                productId: mongoose.Schema.Types.ObjectId,
+                type : mongoose.Schema.Types.ObjectId,
+                ref : "Product"
             }
         ],
         orders : [
             {
-                orderId: mongoose.Schema.Types.ObjectId,
-            }
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Order"
+            } 
+            
         ],
         passResetToken:{
             type: String,
@@ -56,7 +80,7 @@
         },
         createdAt : {
             type: Date,
-            default: Date.now(),
+            default: Date.now,
         }
 
     });

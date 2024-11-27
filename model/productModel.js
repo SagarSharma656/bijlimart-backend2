@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
     warehouseId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'warehouse',
+        ref: 'Warehouse',
         required: true,
     },
     title: {
@@ -12,9 +12,13 @@ const productSchema = new mongoose.Schema({
     description: {
         type: String,
     },
-    category: {
+    category : {
         type: mongoose.Schema.Types.ObjectId,
         ref:'Category'
+    },
+    subCategory : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SubCategory"
     },
     unitId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -34,13 +38,13 @@ const productSchema = new mongoose.Schema({
             type: String
         }
     ],
-    isAvilable :{
+    isAvailable :{
         type: Boolean,
         default: true,
     },
     createdAt:{
         type: Date,
-        default: Date.now(),
+        default: Date.now,
     }
 })
 
