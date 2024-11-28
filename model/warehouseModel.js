@@ -82,7 +82,6 @@
             type: Date,
             default: Date.now,
         }
-
     });
 
     warehouseSchema.index({ location: '2dsphere' });
