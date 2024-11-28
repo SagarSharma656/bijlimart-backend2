@@ -35,7 +35,7 @@ const sendOtpOnEmail = async (req, res) => {
         //     })
         // }
 
-        const otp = await otpGenerator.generate(6, {
+        const otp = await otpGenerator.generate(4, {
             digits: true,
             upperCaseAlphabets: false,
             lowerCaseAlphabets: false,
@@ -74,7 +74,7 @@ const sendOtpOnWhatsapp = async (req, res) => {
             })
         }
 
-        const otp = await otpGenerator.generate(6, {
+        const otp = await otpGenerator.generate(4, {
             digits: true,
             upperCaseAlphabets: false,
             lowerCaseAlphabets: false,
